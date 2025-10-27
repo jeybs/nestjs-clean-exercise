@@ -17,6 +17,8 @@ import { ErrorHelper } from 'src/core/helper/error.helper';
 import { LoggerUtils } from 'src/core/logger/logger.service';
 import { UserResponse } from './response/user.response';
 import { HashedIdPipe } from 'src/core/pipes/hashed-id.pipe';
+import { CreateUserModel } from '../../domain/models/inputs/create-user.model';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('user')
 export class UserController {
@@ -24,7 +26,7 @@ export class UserController {
 
   constructor(
     @Inject('ICreateUserUseCase')
-    private readonly createUserUseCase: IUseCase<CreateUserInput, UserModel>,
+    private readonly createUserUseCase: IUseCase<CreateUserModel, UserModel>,
 
     @Inject('IFindAllUsersUseCase')
     private readonly findAllUsersUseCase: IUseCase<void, UserModel[]>,
@@ -33,7 +35,9 @@ export class UserController {
   @Post('/')
   @HttpCode(201)
   async createUser(@Body() body: CreateUserInput) {
-    const createUserResult = await this.createUserUseCase.execute(body);
+    const createUserResult = await this.createUserUseCase.execute(
+      plainToInstance(CreateUserModel, body),
+    );
     LoggerUtils.debug(this.TAG, `Input Body: ${JSON.stringify(body)}`);
 
     return pipe(
